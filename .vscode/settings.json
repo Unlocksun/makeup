@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/ubuntu/kilo",
+            "binaryPath": "/home/ubuntu/kilo/makeup",
+            "binaryArgs": ["kilo.h"]
+        }
+    ]
+}
