@@ -14,15 +14,9 @@ private:
     int unsaved;
     int rownums, colnums;       // row and column nums of file
 public:
-    FileHandler(){
-        fd = STDIN_FILENO;
-    }
-    string readFile(const string& filename) {
-        return "";
-    }
-
-    void writeFile(const string& filename, const string& content) {
-    }
+    FileHandler(){}
+    string readFile(const string& filename);
+    void writeFile(const string& filename, const string& content);
 };
 
 // 编辑器类
@@ -32,9 +26,10 @@ public:
     Terminal ui;
 public:
     void run();
-    char readKey();
+    int readKey();
     void keyHandler();
-    Editor(){
-    }
+    void moveCursor(int direction);
+    Editor(){}
+    ~Editor(){}
 };
 #endif

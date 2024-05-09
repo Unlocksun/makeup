@@ -18,7 +18,6 @@ using namespace std;
 class Buffer {
 private:
     vector<char> content;
-    int size;
 public:
     void writeBuffer(const char* input, int len);
     int getSize();
@@ -28,9 +27,10 @@ public:
 
 // 控制终端
 class Terminal {
+friend class Editor;
 private:
-    int cx, cy;                 // position of cursor
-    int rowoff, coloff;         // the offset of row and column displayed
+    int cx, cy;                 // x为列，y为行
+    int rowoff, coloff;         // 显示文件的行列偏移
     bool rawmode;
 
     struct termios orig_termios;

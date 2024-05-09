@@ -3,13 +3,11 @@
 
 Terminal::~Terminal()
 {
+    clearScreen();
     disableRawMode(STDIN_FILENO);
-   clearScreen();
 }
 
 void Terminal::die(const char *s) {
-    clearScreen();
-
     perror(s);
     exit(1);
 }    
@@ -27,13 +25,24 @@ void Terminal::clearScreen()
 
 void Terminal::drawRows()
 {
+    this->getWindowSize();
     for (int y = 0; y < win_rows-1; ++y)
     {
         if (win_rows / 3 == y)
         {
-            char welcome[20];
-            snprintf(welcome, win_cols, "Welcome!---Version: %s", VERTION);
-            buffer.writeBuffer(welcome, 20);
+            char welcome[80];
+            int len = snprintf(welcome, sizeof(welcome), "Welcome!---Version: %s, row:%d, col:%d", VERTION, win_rows, win_cols);
+            if(len > win_cols) len = win_cols;
+            int padding = (win_cols - len)/2;
+            if(padding)
+            {
+                buffer.writeBuffer("@", 1);
+                --padding;
+            }
+            while (padding--) buffer.writeBuffer(" ", 1);
+            
+            buffer.writeBuffer(welcome, len);
+            buffer.writeBuffer("\r\n", 2);
             continue;
         }
         
@@ -48,8 +57,14 @@ void Terminal::drawRows()
 void Terminal::refreshScreen()
 {
     buffer.writeBuffer("\x1b[?25l", 6); // hide cursor
-    drawRows();
     buffer.writeBuffer("\x1b[H", 3);
+
+    drawRows();
+
+    char buf[32];
+    int len = snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy+1, cx+1);
+    buffer.writeBuffer(buf, len);
+
     buffer.writeBuffer("\x1b[?25h", 6); // show cursor
 
     write(STDOUT_FILENO, buffer.getText(), buffer.getSize());
@@ -108,13 +123,12 @@ int Terminal::getWindowSize()
 
 void Buffer::writeBuffer(const char* input, int len)
 {
-    content.insert(content.end(), input, input + (len));
-    size = content.size();
+    content.insert(content.end(), input, input + len);
 }
 
 int Buffer::getSize()
 {
-    return size;
+    return content.size();
 }
 
 char* Buffer::getText()
@@ -125,5 +139,4 @@ char* Buffer::getText()
 void Buffer::clearBuffer()
 {
     content.clear();
-    size = 0;
 }
