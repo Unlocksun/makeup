@@ -5,5 +5,8 @@
             "binaryPath": "/home/ubuntu/kilo/makeup",
             "binaryArgs": ["kilo.h"]
         }
-    ]
+    ],
+    "files.associations": {
+        "fstream": "cpp"
+    }
 }

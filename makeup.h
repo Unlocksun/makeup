@@ -22,11 +22,15 @@ enum editorKey {
 class FileHandler {
 private:
     int fd;
-    string openFile;
+    string filename;
     int unsaved;
     int rownums, colnums;       // row and column nums of file
 public:
-    FileHandler(){}
+    FileHandler()
+    {
+        rownums = 0;
+        colnums = 0;
+    }
     string readFile(const string& filename);
     void writeFile(const string& filename, const string& content);
 };
@@ -39,6 +43,7 @@ public:
 public:
     void run();
     int readKey();
+    int openFile(string filename);
     void keyHandler();
     void moveCursor(int direction);
     Editor(){}

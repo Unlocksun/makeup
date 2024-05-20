@@ -134,6 +134,8 @@ int main(int argc, char const *argv[])
 
     static Editor editor;
 
+    editor.openFile(argv[1]);
+
     if(editor.ui.Init())
     {
         fprintf(stderr, "Now done");
@@ -141,5 +143,24 @@ int main(int argc, char const *argv[])
     }
 
     editor.run();
+    return 0;
+}
+
+int Editor::openFile(string filename)
+{
+    fstream file_stream(filename);
+
+    if (!file_stream.is_open()) {
+        cerr << "无法打开文件: " << filename << endl;
+        exit(1);
+    }
+
+    string line;
+    if (getline(file_stream, line)) {
+        ui.numrows = 1;
+        ui.rowdata.push_back(line);
+    }
+
+    file_stream.close();
     return 0;
 }

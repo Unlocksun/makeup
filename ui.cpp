@@ -20,7 +20,7 @@ void Terminal::die(const char *s) {
 
 void Terminal::clearScreen()
 {
-    // \x1b: esc; [2J: 清屏
+    // <esc>[2J: 清屏
     buffer.writeBuffer("\x1b[2J", 4);
     // <esc>[12;40H 将光标设置为（12，40）(默认)
     buffer.writeBuffer("\x1b[H", 3);
@@ -28,33 +28,41 @@ void Terminal::clearScreen()
     write(STDOUT_FILENO, buffer.getText(), buffer.getSize());
     buffer.clearBuffer();
 }
-
+/* 逐行在终端打印内容 */
 void Terminal::drawRows()
 {
     this->getWindowSize();
     for (int y = 0; y < win_rows-1; ++y)
     {
-        if (win_rows / 3 == y)
+        if(y >= numrows)
         {
-            char welcome[80];
-            int len = snprintf(welcome, sizeof(welcome), "Welcome!---Version: %s, row:%d, col:%d", VERTION, win_rows, win_cols);
-            if(len > win_cols) len = win_cols;
-            int padding = (win_cols - len)/2;
-            if(padding)
+            if (numrows == 0 && win_rows / 3 == y)
             {
-                buffer.writeBuffer("@", 1);
-                --padding;
+                char welcome[80];
+                int len = snprintf(welcome, sizeof(welcome), "Welcome!---Version: %s, row:%d, col:%d", VERTION, win_rows, win_cols);
+                if(len > win_cols) len = win_cols;
+                int padding = (win_cols - len)/2;
+                if(padding)
+                {
+                    buffer.writeBuffer("@", 1);
+                    --padding;
+                }
+                while (padding--) buffer.writeBuffer(" ", 1);
+                
+                buffer.writeBuffer(welcome, len);
+                buffer.writeBuffer("\r\n", 2);
+                continue;
             }
-            while (padding--) buffer.writeBuffer(" ", 1);
             
-            buffer.writeBuffer(welcome, len);
-            buffer.writeBuffer("\r\n", 2);
-            continue;
+            buffer.writeBuffer("~\r\n", 3);
+            // x1b[K: 清除光标至行尾的内容
+            buffer.writeBuffer("\x1b[K", 3);
         }
-        
-        buffer.writeBuffer("~\r\n", 3);
-        // x1b[K: 清除光标至行尾的内容
-        buffer.writeBuffer("\x1b[K", 3);
+        else
+        {
+            buffer.writeBuffer(rowdata[0].c_str(), rowdata[0].length());
+            buffer.writeBuffer("\r\n", 2);
+        }
     }
     buffer.writeBuffer("~", 1);
     buffer.writeBuffer("\x1b[K", 3);

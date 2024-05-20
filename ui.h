@@ -2,6 +2,7 @@
 #define UI_H
 
 #include <iostream>
+#include <fstream>
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -30,14 +31,16 @@ class Terminal {
 friend class Editor;
 private:
     int cx, cy;                 // x为列，y为行
-    int rowoff, coloff;         // 显示文件的行列偏移
-    bool rawmode;
+    int rowoff, coloff;         // 显示内容在文件中的行列偏移
+
+    int numrows;                // 有文件内容的行数，超出范围使用 ~ 替代
+    vector<string> rowdata;     // 存储每行的数据
 
     struct termios orig_termios; // 原始终端参数，用于退出后恢复终端
+    bool rawmode;
 
-    int win_cols;           // size of window
-    int win_rows;
-    Buffer buffer;
+    int win_cols, win_rows;     // 终端行列
+    Buffer buffer;              // 终端缓冲
 public:
     Terminal()
     {
