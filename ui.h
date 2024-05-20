@@ -33,7 +33,8 @@ private:
     int rowoff, coloff;         // 显示文件的行列偏移
     bool rawmode;
 
-    struct termios orig_termios;
+    struct termios orig_termios; // 原始终端参数，用于退出后恢复终端
+
     int win_cols;           // size of window
     int win_rows;
     Buffer buffer;
@@ -51,6 +52,7 @@ public:
         }
     }
     ~Terminal();
+    int Init();
     int enableRawMode();
     int getWindowSize();
     void disableRawMode(int fd);

@@ -7,6 +7,12 @@ Terminal::~Terminal()
     disableRawMode(STDIN_FILENO);
 }
 
+int Terminal::Init()
+{
+    clearScreen();
+    return enableRawMode();
+}
+
 void Terminal::die(const char *s) {
     perror(s);
     exit(1);
@@ -73,8 +79,11 @@ void Terminal::refreshScreen()
 
 void Terminal::disableRawMode(int fd)
 {
-    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
-        die("tcsetattr");
+    if(rawmode)
+    {
+        tcsetattr(fd, TCSAFLUSH, &orig_termios) == -1;
+        rawmode = false;
+    }
 }
 
 int Terminal::enableRawMode()
