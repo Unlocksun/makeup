@@ -106,9 +106,10 @@ void Editor::keyHandler()
     case PAGE_UP:
     case PAGE_DOWN:
     {
-        int times = ui.win_rows;
-        while (times--)
-            moveCursor(keyvalue == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+        ui.getWindowSize();
+        ui.rowoff += (keyvalue == PAGE_UP) ? -1:1;
+        if (ui.rowoff < 0) ui.rowoff = 0;
+        if (ui.rowoff >= ui.numrows-ui.win_rows+1) ui.rowoff = ui.numrows-ui.win_rows+1;
         break;
     }
     default:

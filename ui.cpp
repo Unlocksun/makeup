@@ -31,7 +31,6 @@ void Terminal::clearScreen()
 /* 逐行在终端打印内容 */
 void Terminal::drawRows()
 {
-    this->getWindowSize();
     for (int y = 0; y < win_rows-1; ++y)
     {
         if(y > numrows)
@@ -59,8 +58,12 @@ void Terminal::drawRows()
         }
         else
         {
-            buffer.writeBuffer(rowdata[y].c_str());
-            buffer.writeBuffer("\r\n");
+            if (y<=(numrows-rowoff))
+            {
+                buffer.writeBuffer(rowdata[y+rowoff].c_str());
+                buffer.writeBuffer("\x1b[K");   // x1b[K: 清除光标至行尾的内容
+                buffer.writeBuffer("\r\n");
+            }
         }
     }
     buffer.writeBuffer("\x1b[K");
