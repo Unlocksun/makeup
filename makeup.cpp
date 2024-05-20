@@ -148,19 +148,32 @@ int main(int argc, char const *argv[])
 
 int Editor::openFile(string filename)
 {
-    fstream file_stream(filename);
-
-    if (!file_stream.is_open()) {
-        cerr << "无法打开文件: " << filename << endl;
-        exit(1);
-    }
+    fh.openFile(filename);
 
     string line;
-    if (getline(file_stream, line)) {
-        ui.numrows = 1;
+    fstream& fs = fh.getFileStream();
+
+    while (getline(fs, line))
+    {
+        ++ui.numrows;
         ui.rowdata.push_back(line);
     }
 
-    file_stream.close();
     return 0;
+}
+
+fstream FileHandler::openFile(string filename)
+{
+    currfile.open(filename);
+
+    if (!currfile.is_open())
+    {
+        cerr << "Failed to open file: " << filename << endl;
+        exit(1);
+    }
+    else
+    {
+        this->filename = filename;
+    }
+    return fstream();
 }

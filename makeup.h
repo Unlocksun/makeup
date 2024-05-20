@@ -21,7 +21,7 @@ enum editorKey {
 // 文件处理类
 class FileHandler {
 private:
-    int fd;
+    fstream currfile;
     string filename;
     int unsaved;
     int rownums, colnums;       // row and column nums of file
@@ -31,14 +31,18 @@ public:
         rownums = 0;
         colnums = 0;
     }
+    fstream openFile(string filename);
     string readFile(const string& filename);
     void writeFile(const string& filename, const string& content);
+    fstream& getFileStream() {
+        return currfile;
+    }
 };
 
 // 编辑器类
 class Editor {
 public:
-    FileHandler fileHandler;
+    FileHandler fh;
     Terminal ui;
 public:
     void run();

@@ -20,7 +20,7 @@ class Buffer {
 private:
     vector<char> content;
 public:
-    void writeBuffer(const char* input, int len);
+    void writeBuffer(const std::string& input);
     int getSize();
     char* getText();
     void clearBuffer();

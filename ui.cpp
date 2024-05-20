@@ -21,9 +21,9 @@ void Terminal::die(const char *s) {
 void Terminal::clearScreen()
 {
     // <esc>[2J: 清屏
-    buffer.writeBuffer("\x1b[2J", 4);
+    buffer.writeBuffer("\x1b[2J");
     // <esc>[12;40H 将光标设置为（12，40）(默认)
-    buffer.writeBuffer("\x1b[H", 3);
+    buffer.writeBuffer("\x1b[H");
 
     write(STDOUT_FILENO, buffer.getText(), buffer.getSize());
     buffer.clearBuffer();
@@ -34,7 +34,7 @@ void Terminal::drawRows()
     this->getWindowSize();
     for (int y = 0; y < win_rows-1; ++y)
     {
-        if(y >= numrows)
+        if(y > numrows)
         {
             if (numrows == 0 && win_rows / 3 == y)
             {
@@ -44,42 +44,40 @@ void Terminal::drawRows()
                 int padding = (win_cols - len)/2;
                 if(padding)
                 {
-                    buffer.writeBuffer("@", 1);
+                    buffer.writeBuffer("@");
                     --padding;
                 }
-                while (padding--) buffer.writeBuffer(" ", 1);
+                while (padding--) buffer.writeBuffer(" ");
                 
-                buffer.writeBuffer(welcome, len);
-                buffer.writeBuffer("\r\n", 2);
+                buffer.writeBuffer(welcome);
+                buffer.writeBuffer("\r\n");
                 continue;
             }
             
-            buffer.writeBuffer("~\r\n", 3);
-            // x1b[K: 清除光标至行尾的内容
-            buffer.writeBuffer("\x1b[K", 3);
+            buffer.writeBuffer("~\r\n");
+            buffer.writeBuffer("\x1b[K");   // x1b[K: 清除光标至行尾的内容
         }
         else
         {
-            buffer.writeBuffer(rowdata[0].c_str(), rowdata[0].length());
-            buffer.writeBuffer("\r\n", 2);
+            buffer.writeBuffer(rowdata[y].c_str());
+            buffer.writeBuffer("\r\n");
         }
     }
-    buffer.writeBuffer("~", 1);
-    buffer.writeBuffer("\x1b[K", 3);
+    buffer.writeBuffer("\x1b[K");
 }
 
 void Terminal::refreshScreen()
 {
-    buffer.writeBuffer("\x1b[?25l", 6); // hide cursor
-    buffer.writeBuffer("\x1b[H", 3);
+    buffer.writeBuffer("\x1b[?25l"); // hide cursor
+    buffer.writeBuffer("\x1b[H");
 
     drawRows();
 
     char buf[32];
     int len = snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy+1, cx+1);
-    buffer.writeBuffer(buf, len);
+    buffer.writeBuffer(buf);
 
-    buffer.writeBuffer("\x1b[?25h", 6); // show cursor
+    buffer.writeBuffer("\x1b[?25h"); // show cursor
 
     write(STDOUT_FILENO, buffer.getText(), buffer.getSize());
     buffer.clearBuffer();
@@ -138,9 +136,9 @@ int Terminal::getWindowSize()
     }
 }
 
-void Buffer::writeBuffer(const char* input, int len)
+void Buffer::writeBuffer(const std::string& input)
 {
-    content.insert(content.end(), input, input + len);
+    content.insert(content.end(), input.begin(), input.end());
 }
 
 int Buffer::getSize()

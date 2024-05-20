@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/makeup",
             "args": [
-                "kilo.c"
+                "makeup.cpp"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
