@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/makeup",
             "args": [
-                "makeup.cpp"
+                "blank"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",

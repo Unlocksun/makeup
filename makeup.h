@@ -24,12 +24,13 @@ private:
     fstream currfile;
     string filename;
     int unsaved;
-    int rownums, colnums;       // row and column nums of file
+public:
+    int rownum, colnum;       // row and column nums of file
 public:
     FileHandler()
     {
-        rownums = 0;
-        colnums = 0;
+        rownum = 0;
+        colnum = 0;
     }
     fstream openFile(string filename);
     string readFile(const string& filename);

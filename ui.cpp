@@ -33,9 +33,10 @@ void Terminal::drawRows()
 {
     for (int y = 0; y < win_rows-1; ++y)
     {
-        if(y > numrows)
+        if(y >= content_row_num)
         {
-            if (numrows == 0 && win_rows / 3 == y)
+            // 空文档打印欢迎信息
+            if (content_row_num == 0 && win_rows / 3 == y)
             {
                 char welcome[80];
                 int len = snprintf(welcome, sizeof(welcome), "Welcome!---Version: %s, row:%d, col:%d", VERTION, win_rows, win_cols);
@@ -56,17 +57,51 @@ void Terminal::drawRows()
             buffer.writeBuffer("~\r\n");
             buffer.writeBuffer("\x1b[K");   // x1b[K: 清除光标至行尾的内容
         }
+        else if (y < content_row_num-rowoff)
+        {
+            int rowlength = rowdata[y + rowoff].length();
+            if(coloff < rowlength) 
+                buffer.writeBuffer(rowdata[y + rowoff].c_str() + coloff, win_cols);
+
+            buffer.writeBuffer("\x1b[K");   // x1b[K: 清除光标至行尾的内容
+            buffer.writeBuffer("\r\n");
+        }
         else
         {
-            if (y<=(numrows-rowoff))
-            {
-                buffer.writeBuffer(rowdata[y+rowoff].c_str());
-                buffer.writeBuffer("\x1b[K");   // x1b[K: 清除光标至行尾的内容
-                buffer.writeBuffer("\r\n");
-            }
+            buffer.writeBuffer("~\r\n");
+            buffer.writeBuffer("\x2b[K");
         }
     }
+
+    buffer.writeBuffer("This is info line ^_^");
     buffer.writeBuffer("\x1b[K");
+}
+
+// 滚动屏幕，directing：-1上滚，1下滚，-2左滚
+void Terminal::winScroll(int direction)
+{
+    getWindowSize();
+    switch (direction)
+    {
+    case -1:
+    case 1:
+        rowoff += direction;
+        // 如果行偏移量超出了上边界，则设为0
+        if (rowoff < 0) rowoff = 0;
+        // 如果内容行数超过窗口行数，且行偏移量超出了下边界（视图不足以显示所有内容），则设为最大可能值
+        else if (content_row_num > win_rows && rowoff > content_row_num - win_rows) rowoff = content_row_num - win_rows;
+        // 如果内容行数不足以填满窗口，将行偏移量设为0
+        else if (content_row_num <= win_rows) rowoff = 0;
+        break;
+    case -2:
+    case 2:
+        coloff += direction/2;
+        if (coloff < 0) coloff = 0;
+        if (coloff >= win_cols+1) coloff =  win_cols + 1;
+        break;
+    default:
+        break;
+    }
 }
 
 void Terminal::refreshScreen()
@@ -76,8 +111,9 @@ void Terminal::refreshScreen()
 
     drawRows();
 
+    // 更新光标位置
     char buf[32];
-    int len = snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy+1, cx+1);
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy+1, cx+1);
     buffer.writeBuffer(buf);
 
     buffer.writeBuffer("\x1b[?25h"); // show cursor
@@ -139,9 +175,18 @@ int Terminal::getWindowSize()
     }
 }
 
-void Buffer::writeBuffer(const std::string& input)
+void Buffer::writeBuffer(const string& input)
 {
     content.insert(content.end(), input.begin(), input.end());
+}
+
+void Buffer::writeBuffer(const string& input, int len)
+{
+    int inputlen = input.length();
+    if (inputlen > len)
+        content.insert(content.end(), input.begin(), input.begin() + len - 1);
+    else 
+        content.insert(content.end(), input.begin(), input.end());
 }
 
 int Buffer::getSize()

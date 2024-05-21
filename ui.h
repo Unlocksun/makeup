@@ -21,6 +21,7 @@ private:
     vector<char> content;
 public:
     void writeBuffer(const std::string& input);
+    void writeBuffer(const std::string& input, int len);
     int getSize();
     char* getText();
     void clearBuffer();
@@ -33,7 +34,7 @@ private:
     int cx, cy;                 // x为列，y为行
     int rowoff, coloff;         // 显示内容在文件中的行列偏移
 
-    int numrows;                // 有文件内容的行数，超出范围使用 ~ 替代
+    int content_row_num;        // 内容不为空的行数，超出该范围的行使用 ~ 替代
     vector<string> rowdata;     // 存储每行的数据
 
     struct termios orig_termios; // 原始终端参数，用于退出后恢复终端
@@ -49,10 +50,7 @@ public:
         rowoff = 0;
         coloff = 0;
 
-        if (getWindowSize() == -1)
-        {
-            die("getWindowSize");
-        }
+        if (getWindowSize() == -1) die("getWindowSize");
     }
     ~Terminal();
     int Init();
@@ -63,6 +61,7 @@ public:
     void die(const char *s);
     void refreshScreen();
     void drawRows();
+    void winScroll(int direction);
 };
 
 #endif

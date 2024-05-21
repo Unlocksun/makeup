@@ -65,19 +65,24 @@ int Editor::readKey()
 
 void Editor::moveCursor(int direction)
 {
+    ui.getWindowSize();
     switch (direction)
     {
     case ARROW_LEFT:
-        if(ui.cx > 0) ui.cx--;
+        if(ui.cx > 0) --ui.cx;
+        else ui.winScroll(-2);
         break;
     case ARROW_RIGHT:
-        if(ui.cx < ui.win_cols - 1) ui.cx++;
+        if(ui.cx < ui.win_cols - 1) ++ui.cx;
+        else ui.winScroll(2);
         break;
     case ARROW_UP:
-        if(ui.cy > 0) ui.cy--;
+        if(ui.cy > 0) --ui.cy;
+        else ui.winScroll(-1);
         break;
     case ARROW_DOWN:
-        if(ui.cy < ui.win_rows - 1) ui.cy++;
+        if(ui.cy < ui.win_rows - 2) ++ui.cy;
+        else ui.winScroll(1);
         break;
     }
 }
@@ -101,15 +106,13 @@ void Editor::keyHandler()
         ui.cx = 0;
         break;
     case END_KEY:
+        ui.getWindowSize();
         ui.cx = ui.win_cols - 1;
         break;
     case PAGE_UP:
     case PAGE_DOWN:
     {
-        ui.getWindowSize();
-        ui.rowoff += (keyvalue == PAGE_UP) ? -1:1;
-        if (ui.rowoff < 0) ui.rowoff = 0;
-        if (ui.rowoff >= ui.numrows-ui.win_rows+1) ui.rowoff = ui.numrows-ui.win_rows+1;
+        ui.winScroll(keyvalue == PAGE_UP ? -1 : 1);
         break;
     }
     default:
@@ -156,10 +159,10 @@ int Editor::openFile(string filename)
 
     while (getline(fs, line))
     {
-        ++ui.numrows;
+        ++ui.content_row_num;
         ui.rowdata.push_back(line);
     }
-
+    fh.rownum = ui.content_row_num;
     return 0;
 }
 
