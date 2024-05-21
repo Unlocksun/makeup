@@ -66,25 +66,71 @@ int Editor::readKey()
 void Editor::moveCursor(int direction)
 {
     ui.getWindowSize();
+    int cy_in_file = ui.cy + ui.rowoff;
+    int cx_in_file = ui.cx + ui.coloff;
+    int row_length = ui.rowdata[cy_in_file].length();
     switch (direction)
     {
     case ARROW_LEFT:
-        if(ui.cx > 0) --ui.cx;
-        else ui.winScroll(-2);
-        break;
-    case ARROW_RIGHT:
-        if(ui.cx < ui.win_cols - 1) ++ui.cx;
-        else ui.winScroll(2);
-        break;
-    case ARROW_UP:
-        if(ui.cy > 0) --ui.cy;
-        else ui.winScroll(-1);
-        break;
-    case ARROW_DOWN:
-        if(ui.cy < ui.win_rows - 2) ++ui.cy;
-        else ui.winScroll(1);
+    {
+        if (cx_in_file > 0)
+            --ui.cx;
+        else if(cy_in_file > 0)
+        {
+            --ui.cy;
+            --cy_in_file;
+            row_length = ui.rowdata[cy_in_file].length();
+            ui.cx = row_length - ui.coloff;
+        }
         break;
     }
+    case ARROW_RIGHT:
+    {
+        if (cx_in_file < row_length)
+            ++ui.cx;
+        else if(cy_in_file < ui.content_row_num-1)
+        {
+            ++ui.cy;
+            ui.cx = -ui.coloff;
+        }
+        break;
+    }
+    case ARROW_UP:
+    {
+        if (cy_in_file > 0)
+        {
+            --ui.cy;
+            cy_in_file = ui.cy + ui.rowoff;
+            row_length = ui.rowdata[cy_in_file].length();
+            if (cx_in_file > row_length)
+                ui.cx = row_length - ui.coloff;
+        }
+        break;
+    }
+    case ARROW_DOWN:
+    {
+        if (cy_in_file < ui.content_row_num-1)
+        {
+            ++ui.cy;
+            cy_in_file = ui.cy + ui.rowoff;
+            row_length = ui.rowdata[cy_in_file].length();
+            if (cx_in_file > row_length)
+                ui.cx = row_length - ui.coloff;
+        }
+        break;
+    }
+    case END_KEY:
+    {
+        ui.cx = row_length - ui.coloff;
+        break;
+    }
+    case HOME_KEY:
+    {
+        ui.cx = -ui.coloff;
+        break;
+    }
+    }
+    ui.winScroll();
 }
 
 void Editor::keyHandler()
@@ -99,15 +145,12 @@ void Editor::keyHandler()
     case ARROW_UP:
     case ARROW_LEFT:
     case ARROW_RIGHT:
+    case HOME_KEY:
+    case END_KEY:
         moveCursor(keyvalue);
         break;
     case DEL_KEY:
-    case HOME_KEY:
         ui.cx = 0;
-        break;
-    case END_KEY:
-        ui.getWindowSize();
-        ui.cx = ui.win_cols - 1;
         break;
     case PAGE_UP:
     case PAGE_DOWN:
@@ -138,7 +181,7 @@ int main(int argc, char const *argv[])
 
     static Editor editor;
 
-    editor.openFile(argv[1]);
+    editor.readFile(argv[1]);
 
     if(editor.ui.Init())
     {
@@ -150,7 +193,7 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-int Editor::openFile(string filename)
+int Editor::readFile(string filename)
 {
     fh.openFile(filename);
 
@@ -159,8 +202,18 @@ int Editor::openFile(string filename)
 
     while (getline(fs, line))
     {
+        // 转换TAB为空格
+        string line_no_tabs;
+        for (auto ch:line)
+        {
+            if (ch == '\t')
+                line_no_tabs.append(TABLE_SIZE, ' ');
+            else
+                line_no_tabs += ch;
+        }
+
         ++ui.content_row_num;
-        ui.rowdata.push_back(line);
+        ui.rowdata.push_back(line_no_tabs);
     }
     fh.rownum = ui.content_row_num;
     return 0;

@@ -62,6 +62,7 @@ public:
     void refreshScreen();
     void drawRows();
     void winScroll(int direction);
+    void winScroll();
 };
 
 #endif

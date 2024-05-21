@@ -4,6 +4,7 @@
 
 /*** defines ***/
 #define CTRL_KEY(k) ((k) & 0x1f)
+#define TABLE_SIZE 8
 
 /*** keys ***/
 enum editorKey {
@@ -48,7 +49,7 @@ public:
 public:
     void run();
     int readKey();
-    int openFile(string filename);
+    int readFile(string filename);
     void keyHandler();
     void moveCursor(int direction);
     Editor(){}

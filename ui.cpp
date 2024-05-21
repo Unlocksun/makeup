@@ -28,6 +28,7 @@ void Terminal::clearScreen()
     write(STDOUT_FILENO, buffer.getText(), buffer.getSize());
     buffer.clearBuffer();
 }
+
 /* 逐行在终端打印内容 */
 void Terminal::drawRows()
 {
@@ -89,7 +90,7 @@ void Terminal::winScroll(int direction)
         // 如果行偏移量超出了上边界，则设为0
         if (rowoff < 0) rowoff = 0;
         // 如果内容行数超过窗口行数，且行偏移量超出了下边界（视图不足以显示所有内容），则设为最大可能值
-        else if (content_row_num > win_rows && rowoff > content_row_num - win_rows) rowoff = content_row_num - win_rows;
+        else if (content_row_num > win_rows && rowoff > content_row_num - win_rows) rowoff = content_row_num - win_rows + 1;
         // 如果内容行数不足以填满窗口，将行偏移量设为0
         else if (content_row_num <= win_rows) rowoff = 0;
         break;
@@ -97,10 +98,42 @@ void Terminal::winScroll(int direction)
     case 2:
         coloff += direction/2;
         if (coloff < 0) coloff = 0;
-        if (coloff >= win_cols+1) coloff =  win_cols + 1;
+        if (coloff >= win_cols+100) coloff =  win_cols + 100;
         break;
     default:
         break;
+    }
+}
+
+void Terminal::winScroll()
+{
+    getWindowSize();
+
+    while (cx < 0)
+    {
+        if (coloff > 0)
+            --coloff;
+        ++cx;
+    }
+
+    while (cx > win_cols - 1)
+    {
+        ++coloff;
+        --cx;
+    }
+
+    while (cy < 0)
+    {
+        if (rowoff > 0)
+            --rowoff;
+        ++cy;
+    }
+    
+    while (cy > win_rows - 2)
+    {
+        if (rowoff < content_row_num - win_rows + 1)
+            ++rowoff;
+        --cy;
     }
 }
 
@@ -184,7 +217,7 @@ void Buffer::writeBuffer(const string& input, int len)
 {
     int inputlen = input.length();
     if (inputlen > len)
-        content.insert(content.end(), input.begin(), input.begin() + len - 1);
+        content.insert(content.end(), input.begin(), input.begin() + len);
     else 
         content.insert(content.end(), input.begin(), input.end());
 }
