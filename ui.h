@@ -6,11 +6,11 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <fstream>
 #include <string>
 #include <sys/ioctl.h>
 #include <vector>
 
+#include "filehandler.h"
 /*** Defines ***/
 #define VERTION "0.0.1"
 
@@ -59,8 +59,8 @@ public:
     void disableRawMode(int fd);
     void clearScreen();
     void die(const char *s);
-    void refreshScreen();
-    void drawRows();
+    void refreshScreen(const FileHandler& fh);
+    void drawRows(const FileHandler& fh);
     void winScroll(int direction);
     void winScroll();
 };

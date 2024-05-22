@@ -1,6 +1,7 @@
-#ifndef KILO_H
-#define KILO_H
+#ifndef MAKEUP_H
+#define MAKEUP_H
 #include "ui.h"
+#include "filehandler.h"
 
 /*** defines ***/
 #define CTRL_KEY(k) ((k) & 0x1f)
@@ -19,27 +20,6 @@ enum editorKey {
   PAGE_DOWN
 };
 
-// 文件处理类
-class FileHandler {
-private:
-    fstream currfile;
-    string filename;
-    int unsaved;
-public:
-    int rownum, colnum;       // row and column nums of file
-public:
-    FileHandler()
-    {
-        rownum = 0;
-        colnum = 0;
-    }
-    fstream openFile(string filename);
-    string readFile(const string& filename);
-    void writeFile(const string& filename, const string& content);
-    fstream& getFileStream() {
-        return currfile;
-    }
-};
 
 // 编辑器类
 class Editor {

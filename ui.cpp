@@ -1,5 +1,4 @@
 #include "ui.h"
-#include "makeup.h"
 
 Terminal::~Terminal()
 {
@@ -29,8 +28,26 @@ void Terminal::clearScreen()
     buffer.clearBuffer();
 }
 
+void Terminal::refreshScreen(const FileHandler& fh)
+{
+    buffer.writeBuffer("\x1b[?25l"); // hide cursor
+    buffer.writeBuffer("\x1b[H");
+
+    drawRows(fh);
+
+    // 更新光标位置
+    char buf[32];
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy+1, cx+1);
+    buffer.writeBuffer(buf);
+
+    buffer.writeBuffer("\x1b[?25h"); // show cursor
+
+    write(STDOUT_FILENO, buffer.getText(), buffer.getSize());
+    buffer.clearBuffer();
+}
+
 /* 逐行在终端打印内容 */
-void Terminal::drawRows()
+void Terminal::drawRows(const FileHandler& fh)
 {
     for (int y = 0; y < win_rows-1; ++y)
     {
@@ -74,7 +91,7 @@ void Terminal::drawRows()
         }
     }
 
-    buffer.writeBuffer("This is info line ^_^");
+    buffer.writeBuffer(fh.filename + "This is info line ^_^");
     buffer.writeBuffer("\x1b[K");
 }
 
@@ -135,24 +152,6 @@ void Terminal::winScroll()
             ++rowoff;
         --cy;
     }
-}
-
-void Terminal::refreshScreen()
-{
-    buffer.writeBuffer("\x1b[?25l"); // hide cursor
-    buffer.writeBuffer("\x1b[H");
-
-    drawRows();
-
-    // 更新光标位置
-    char buf[32];
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", cy+1, cx+1);
-    buffer.writeBuffer(buf);
-
-    buffer.writeBuffer("\x1b[?25h"); // show cursor
-
-    write(STDOUT_FILENO, buffer.getText(), buffer.getSize());
-    buffer.clearBuffer();
 }
 
 void Terminal::disableRawMode(int fd)
